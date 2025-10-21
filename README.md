@@ -1,66 +1,98 @@
-# 8Ball Café & Pool House Web Platform
+# 8Ball Cafe & Pool – Fullstack Experience
 
-Website fullstack untuk 8Ball Café & Pool House dengan fitur booking billiard per jam, login membership, dan order menu café. Proyek ini menggunakan stack:
+Website demo untuk lounge cafe & billiard modern dengan fitur booking, membership login, dan order F&B. Proyek ini terdiri dari backend Express dan frontend React yang dikemas menggunakan Docker.
 
-- **Backend**: Node.js (Express) dengan security middleware (Helmet, CORS strict, rate limiting).
-- **Frontend**: React + Vite + TailwindCSS.
-- **Containerization**: Dockerfile per service dan docker-compose untuk orkestrasi.
+## Arsitektur
 
-## Struktur Proyek
-
-```
-.
-├── backend/        # REST API Express
-├── frontend/       # React SPA
-├── docker-compose.yml
-└── README.md
-```
+- **Backend (`/backend`)** – REST API berbasis Express dengan fitur:
+  - Registrasi & login membership (JWT) dengan hashing password (`bcrypt`).
+  - Validasi request menggunakan `celebrate`/`Joi`.
+  - Endpoint booking meja billiard dan order makanan/minuman (dummy in-memory store).
+  - Perlindungan dasar: `helmet`, rate limiting, dan CORS configurable.
+- **Frontend (`/frontend`)** – SPA React + Vite dengan tampilan modern dan warna soft.
+  - Landing page dengan konten hero, layanan, menu, dan highlight staff.
+  - Form booking per jam dan order F&B (terkoneksi ke backend dummy).
+  - Modal membership untuk login / sign up serta dashboard member sederhana.
+  - Routing menggunakan `react-router-dom` dan form via `react-hook-form`.
+- **Docker** – Setiap layanan memiliki Dockerfile. `docker-compose.yml` menyediakan orkestrasi keduanya.
 
 ## Menjalankan dengan Docker
 
-Pastikan Docker & Docker Compose telah terinstall.
+Pastikan Docker & Docker Compose sudah terpasang.
 
 ```bash
+# dari root repository
 docker compose up --build
 ```
 
-- Frontend tersedia di http://localhost:8080
-- Backend API di http://localhost:4000 (via jaringan internal Docker, otomatis diproksi oleh frontend)
+Layanan yang tersedia setelah build:
 
-## Menjalankan secara lokal (opsional)
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:4000/api
 
-### Backend
+Untuk menghentikan layanan:
 
 ```bash
+docker compose down
+```
+
+### Variabel Lingkungan
+
+- Backend: salin `backend/.env.example` menjadi `backend/.env` (opsional saat menjalankan tanpa Docker) dan sesuaikan `JWT_SECRET` serta `ALLOWED_ORIGINS`.
+- Frontend: salin `frontend/.env.example` menjadi `.env` untuk mengubah `VITE_API_URL` (default mengarah ke backend lokal).
+
+## Pengembangan Lokal (tanpa Docker)
+
+```bash
+# Backend
 cd backend
-cp .env.example .env   # opsional, gunakan nilai default bila tidak ada file ini
+cp .env.example .env
+npm install
+npm run dev
+
+# Frontend (terminal lain)
+cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-### Frontend
+Frontend berjalan di http://localhost:5173 dan backend di http://localhost:4000.
 
-```bash
-cd frontend
-npm install
-npm run dev -- --host
+## Struktur Direktori
+
+```
+.
+├── backend
+│   ├── src
+│   │   ├── controllers
+│   │   ├── middleware
+│   │   ├── routes
+│   │   └── utils
+│   ├── Dockerfile
+│   └── .env.example
+├── frontend
+│   ├── src
+│   │   ├── components
+│   │   ├── context
+│   │   ├── hooks
+│   │   └── pages
+│   ├── Dockerfile
+│   └── .env.example
+├── docker-compose.yml
+└── README.md
 ```
 
-Set environment variable `VITE_API_BASE_URL=http://localhost:4000/api` agar frontend mengarah ke API lokal.
+## Keamanan
 
-## Akun Demo
+- Hashing password dengan `bcrypt` sebelum disimpan.
+- JWT dengan expiry 4 jam dan middleware otorisasi pada route booking/order.
+- Validasi input ketat untuk registrasi, booking, dan order.
+- Proteksi header & rate limiting untuk meminimalisasi serangan umum.
+- Frontend menggunakan HTTPS-ready nginx config dan menambahkan header keamanan dasar.
 
-Gunakan kredensial berikut untuk login membership:
-
-- Email: `delia@8ballclub.id`
-- Password: `playhard123`
-
-## Catatan Security
-
-- API menggunakan Helmet, rate limiting, validasi payload via Joi, dan JWT untuk sesi member.
-- CORS dibatasi ke origin yang didefinisikan di environment variable `CORS_ORIGINS`.
-- Password contoh di-hash menggunakan bcrypt di memori (untuk demonstrasi).
+> **Catatan**: Penyimpanan data saat ini bersifat in-memory untuk keperluan demo. Untuk produksi gunakan database persisten (PostgreSQL/MySQL) dan kelola rahasia menggunakan secret manager.
 
 ## Lisensi
 
-Proyek ini dibuat sebagai contoh dan dapat dikembangkan lebih lanjut sesuai kebutuhan bisnis Anda.
+MIT
